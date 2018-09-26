@@ -140,6 +140,17 @@ public class Bayespam
         // Print out the hash table
         printVocab();
 
+        int nRegular = listing_regular.length;
+        int nSpam = listing_spam.length;
+        int nTotal = nRegular + nSpam;
+        System.out.println(nRegular);
+        System.out.println(nSpam);
+        double a_priori_regular = (double) nRegular / nTotal;
+        double a_priori_spam = (double) nSpam / nTotal;
+        System.out.println(a_priori_regular);
+        System.out.println(a_priori_spam);
+
+        
         // Now all students must continue from here:
         //
         // 1) A priori class probabilities must be computed from the number of regular and spam messages
