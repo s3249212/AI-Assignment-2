@@ -47,6 +47,19 @@ public class Bayespam
         vocab.put(word, counter);                       // put the word with its counter into the hashtable
     }
 
+    private static String modified(final String input){
+        int cnt=0;
+        final StringBuilder builder = new StringBuilder();
+        for(final char c : input.toCharArray())
+            if(Character.isLetter(c)) {
+                builder.append(Character.isLowerCase(c) ? c : Character.toLowerCase(c));
+                cnt++;
+            }
+        if(cnt>=4)
+            return builder.toString();
+        else
+            return null;
+    }
 
     // List the regular and spam messages
     private static void listDirs(File dir_location)
@@ -149,6 +162,19 @@ public class Bayespam
         double a_priori_spam = (double) nSpam / nTotal;
         System.out.println(a_priori_regular);
         System.out.println(a_priori_spam);
+
+        for (Enumeration<String> e = vocab.keys() ; e.hasMoreElements() ;)
+        {
+            String word;
+            Multiple_Counter counter;
+
+            word = e.nextElement();
+            counter  = vocab.get(word);
+            word = modified(word);
+
+            System.out.println( word + " | in regular: " + counter.counter_regular +
+                    " in spam: "    + counter.counter_spam);
+        }
 
         
         // Now all students must continue from here:
