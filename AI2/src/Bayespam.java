@@ -3,6 +3,8 @@ import java.util.*;
 
 public class Bayespam
 {
+    static double epsilon = 1;
+    static double alpha = 1;
     // This defines the two types of messages we have.
     static enum MessageType
     {
@@ -130,6 +132,58 @@ public class Bayespam
         }
     }
 
+    private static void calculatePosterior(MessageType type, double a_priori_regular, double a_priori_spam, Hashtable<String, Double> cond_regular,
+    Hashtable<String, Double> cond_spam)
+            throws IOException
+    {
+        File[] messages = new File[0];
+        if (type == MessageType.NORMAL){
+            messages = listing_regular;
+        } else {
+            messages = listing_spam;
+        }
+
+        int n_normal = 0, n_spam = 0;
+
+        for (int i = 0; i < messages.length; ++i)
+        {
+            FileInputStream i_s = new FileInputStream( messages[i] );
+            BufferedReader in = new BufferedReader(new InputStreamReader(i_s));
+            String line;
+            String word;
+
+            double post_regular;
+            double post_spam;
+            post_regular = alpha + a_priori_regular;
+            post_spam = alpha + a_priori_spam;
+            System.out.println(post_regular + ", " + post_spam);
+            while ((line = in.readLine()) != null)                      // read a line
+            {
+                StringTokenizer st = new StringTokenizer(line);         // parse it into words
+                while (st.hasMoreTokens())                  // while there are stille words left..
+                {
+                    //addWord(st.nextToken(), type);                  // add them to the vocabulary
+                    //Do calculation here!
+                    word = modified(st.nextToken());
+                    if(word != null && cond_regular.containsKey(word)) {
+                        cond_regular.get(word);
+                        post_regular += cond_regular.get(word);
+                        post_spam += cond_spam.get(word);
+                    }
+                }
+
+            }
+            MessageType classification = (post_regular > post_spam? MessageType.NORMAL: MessageType.SPAM);
+            if(classification == MessageType.NORMAL) {
+                n_normal++;
+            } else {
+                n_spam++;
+            }
+            in.close();
+        }
+        System.out.println("Classifications regular: " + n_normal + ", spam: " + n_spam);
+    }
+
     public static void main(String[] args)
             throws IOException
     {
@@ -158,10 +212,13 @@ public class Bayespam
         int nTotal = nRegular + nSpam;
         System.out.println(nRegular);
         System.out.println(nSpam);
-        double a_priori_regular = (double) nRegular / nTotal;
-        double a_priori_spam = (double) nSpam / nTotal;
+        double a_priori_regular = Math.log((double) nRegular / nTotal);
+        double a_priori_spam = Math.log((double) nSpam / nTotal);
         System.out.println(a_priori_regular);
         System.out.println(a_priori_spam);
+
+
+        Hashtable<String, Multiple_Counter> nvocab = new Hashtable<String, Multiple_Counter>();
 
         for (Enumeration<String> e = vocab.keys() ; e.hasMoreElements() ;)
         {
@@ -172,11 +229,72 @@ public class Bayespam
             counter  = vocab.get(word);
             word = modified(word);
 
-            System.out.println( word + " | in regular: " + counter.counter_regular +
-                    " in spam: "    + counter.counter_spam);
+
+            //System.out.println( word + " | in regular: " + counter.counter_regular +
+             //       " in spam: "    + counter.counter_spam);
+
+            if(word != null) {
+                Multiple_Counter counter2 = new Multiple_Counter();
+
+                if (nvocab.containsKey(word)) {                  // if word exists already in the vocabulary..
+                    counter2 = nvocab.get(word);                  // get the counter from the hashtable
+                }
+                counter2.counter_regular += counter.counter_regular;
+                counter2.counter_spam += counter.counter_regular;
+
+                nvocab.put(word, counter2);                       // put the word with its counter into the hashtable
+            }
         }
 
-        
+        vocab = nvocab;
+        printVocab();
+        int nWordsRegular = 0;
+        int nWordsSpam = 0;
+        for (Enumeration<String> e = vocab.keys() ; e.hasMoreElements() ;)
+        {
+            String word;
+            Multiple_Counter counter;
+            word = e.nextElement();
+            counter  = vocab.get(word);
+            nWordsRegular += counter.counter_regular;
+            nWordsSpam += counter.counter_spam;
+        }
+
+        Hashtable<String, Double> cond_regular = new Hashtable<String, Double>();
+        Hashtable<String, Double> cond_spam = new Hashtable<String, Double>();
+
+        for (Enumeration<String> e = vocab.keys() ; e.hasMoreElements() ;)
+        {
+            String word;
+            Multiple_Counter counter;
+            word = e.nextElement();
+            counter  = vocab.get(word);
+            Double c_r = (double)counter.counter_regular / nWordsRegular;
+            Double c_s = (double)counter.counter_spam / nWordsSpam;
+            c_r = c_r > 0? c_r: epsilon / (nWordsRegular + nWordsSpam);
+            c_s = c_s > 0? c_s: epsilon / (nWordsRegular + nWordsSpam);
+            c_r = Math.log(c_r);
+            c_s = Math.log(c_s);
+            cond_regular.put(word, c_r);
+            cond_spam.put(word, c_s);
+        }
+
+        // Location of the directory (the path) taken from the cmd line (first arg)
+        dir_location = new File( args[1] );
+
+        // Check if the cmd line arg is a directory
+        if ( !dir_location.isDirectory() )
+        {
+            System.out.println( "- Error: cmd line arg not a directory.\n" );
+            Runtime.getRuntime().exit(0);
+        }
+
+        // Initialize the regular and spam lists
+        listDirs(dir_location);
+        System.out.println("\nRegular messages:");
+        calculatePosterior(MessageType.NORMAL, a_priori_regular, a_priori_spam, cond_regular, cond_spam);
+        System.out.println("\nSpam messages:");
+        calculatePosterior(MessageType.SPAM, a_priori_regular, a_priori_spam, cond_regular, cond_spam);
         // Now all students must continue from here:
         //
         // 1) A priori class probabilities must be computed from the number of regular and spam messages
