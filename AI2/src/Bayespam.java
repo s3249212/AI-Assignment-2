@@ -154,9 +154,9 @@ public class Bayespam
 
             double post_regular;
             double post_spam;
-            post_regular = alpha + a_priori_regular;
-            post_spam = alpha + a_priori_spam;
-            System.out.println(post_regular + ", " + post_spam);
+            post_regular = a_priori_regular;
+            post_spam = a_priori_spam;
+            //System.out.println(post_regular + ", " + post_spam);
             while ((line = in.readLine()) != null)                      // read a line
             {
                 StringTokenizer st = new StringTokenizer(line);         // parse it into words
@@ -165,15 +165,19 @@ public class Bayespam
                     //addWord(st.nextToken(), type);                  // add them to the vocabulary
                     //Do calculation here!
                     word = modified(st.nextToken());
+                    //System.out.println("Word: " + word);
                     if(word != null && cond_regular.containsKey(word)) {
-                        cond_regular.get(word);
+                        //cond_regular.get(word);
+                        //System.out.println("Word2: " + cond_regular.get(word) + ", " + cond_spam.get(word));
                         post_regular += cond_regular.get(word);
                         post_spam += cond_spam.get(word);
                     }
                 }
 
             }
+            //System.out.println("Posts: " + post_regular + ", " + post_spam);
             MessageType classification = (post_regular > post_spam? MessageType.NORMAL: MessageType.SPAM);
+            //System.out.println(classification);
             if(classification == MessageType.NORMAL) {
                 n_normal++;
             } else {
@@ -240,7 +244,7 @@ public class Bayespam
                     counter2 = nvocab.get(word);                  // get the counter from the hashtable
                 }
                 counter2.counter_regular += counter.counter_regular;
-                counter2.counter_spam += counter.counter_regular;
+                counter2.counter_spam += counter.counter_spam;
 
                 nvocab.put(word, counter2);                       // put the word with its counter into the hashtable
             }
@@ -269,8 +273,10 @@ public class Bayespam
             Multiple_Counter counter;
             word = e.nextElement();
             counter  = vocab.get(word);
+            System.out.println("conditionals " + word + " " + counter.counter_regular + ", " + counter.counter_spam);
             Double c_r = (double)counter.counter_regular / nWordsRegular;
             Double c_s = (double)counter.counter_spam / nWordsSpam;
+            System.out.println("conditionals " + word + " " + c_r + ", " + c_s);
             c_r = c_r > 0? c_r: epsilon / (nWordsRegular + nWordsSpam);
             c_s = c_s > 0? c_s: epsilon / (nWordsRegular + nWordsSpam);
             c_r = Math.log(c_r);
