@@ -62,7 +62,12 @@ public class RunClustering
 			}
 			
 			// Show of results
-			startUp = showResult(); // ask what information should be shown. (Or train another algorithm)
+			//startUp = showResult(); // ask what information should be shown. (Or train another algorithm)
+
+			for(double threshold = 0.1; threshold <= 0.9; threshold += 0.1) {
+				ca.setPrefetchThreshold(threshold);
+				ca.test();
+			}
 		}
 	}
 	

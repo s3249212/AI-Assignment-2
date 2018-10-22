@@ -171,7 +171,7 @@ public class Kohonen extends ClusteringAlgorithm
 	{
 		for(Cluster ca[]: clusters) {
 			for(Cluster c: ca) {
-				System.out.println(c.currentMembers);
+				//System.out.println(c.currentMembers);
 			}
 		}
 		double nPrefetchedHtmls = 0;
@@ -215,7 +215,7 @@ public class Kohonen extends ClusteringAlgorithm
 		hitrate = nHits / nRequests;
 		//double correctRejection = n
 		accuracy = nHits / nPrefetchedHtmls;
-		System.out.println(hitrate + " " + accuracy);
+		System.out.println(n + " " + prefetchThreshold + " " + hitrate + " " + accuracy);
 		return true;
 	}
 

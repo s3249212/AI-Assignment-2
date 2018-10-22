@@ -66,6 +66,7 @@ public class KMeans extends ClusteringAlgorithm
 		for(int i = 0; i < trainData.size(); i++) {
 			clusters[rand.nextInt(k)].currentMembers.add(i);
 		}
+
 		for(int i = 0; i < k; i++) {
 			/*for (int j = 0; j < dim; j++) {
 				clusters[i].prototype[j] = 0;
@@ -96,7 +97,7 @@ public class KMeans extends ClusteringAlgorithm
 				for (Cluster cluster : clusters) {
 					double distance = 0;
 					for (int i = 0; i < dim; i++) {
-						distance = pow((cluster.prototype[i] - datapoint[i]), 2);
+						distance += pow((cluster.prototype[i] - datapoint[i]), 2);
 					}
 					if (distance < minDistance) {
 						minDistance = distance;
@@ -175,7 +176,7 @@ public class KMeans extends ClusteringAlgorithm
 		hitrate = nHits / nRequests;
 		//double correctRejection = n
 		accuracy = nHits / nPrefetchedHtmls;
-		System.out.println(hitrate + " " + accuracy);
+		System.out.println(k + " " + prefetchThreshold + " " + hitrate + " " + accuracy);
 		return true;
 	}
 
